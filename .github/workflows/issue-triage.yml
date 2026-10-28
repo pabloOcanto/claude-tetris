@@ -1,0 +1,51 @@
+name: Issue Triage
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create bug --color d73a4a --description "Something isn't working" --force
+          gh label create feature --color a2eeef --description "New feature or enhancement" --force
+          gh label create documentation --color 0075ca --description "README, comments or docs" --force
+          gh label create question --color d876e3 --description "Question or unclear request" --force
+          gh label create refactor --color fbca04 --description "Code cleanup without behavior change" --force
+          gh label create performance --color f9a03f --description "Performance improvement" --force
+
+      - name: Classify issue with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: |
+            Repository: ${{ github.repository }}
+            Issue number: ${{ github.event.issue.number }}
+
+            Read the issue with `gh issue view ${{ github.event.issue.number }}` and classify it.
+            Choose exactly ONE label from this list:
+            - bug: something is broken or behaves incorrectly
+            - feature: new functionality or enhancement
+            - documentation: README, comments or docs changes
+            - refactor: code cleanup without behavior change
+            - performance: speed or resource usage improvements
+            - question: a question, or the type is unclear
+
+            Apply it with `gh issue edit ${{ github.event.issue.number }} --add-label <label>`.
+            Do not comment on the issue or change anything else.
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*)"'
