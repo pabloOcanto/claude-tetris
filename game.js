@@ -13,6 +13,7 @@ const COLORS = [
   '#e57373', // Z - red
   '#7986cb', // J - indigo
   '#ffb74d', // L - orange
+  '#fff176', // Rayo - bright yellow
 ];
 
 const PIECES = [
@@ -24,7 +25,12 @@ const PIECES = [
   [[5,5,0],[0,5,5],[0,0,0]],                  // Z
   [[6,0,0],[6,6,6],[0,0,0]],                  // J
   [[0,0,7],[7,7,7],[0,0,0]],                  // L
+  [[8]],                                       // Rayo (power-up)
 ];
+
+const LIGHTNING = 8;
+const LIGHTNING_CHANCE = 0.08;
+const LIGHTNING_CELL_SCORE = 10;
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
@@ -47,7 +53,7 @@ function createBoard() {
 }
 
 function randomPiece() {
-  const type = Math.floor(Math.random() * 7) + 1;
+  const type = Math.random() < LIGHTNING_CHANCE ? LIGHTNING : Math.floor(Math.random() * 7) + 1;
   const shape = PIECES[type].map(row => [...row]);
   return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
 }
@@ -112,6 +118,21 @@ function clearLines() {
   }
 }
 
+function strikeLightning() {
+  const { x, y } = current;
+  let cleared = 0;
+  for (let c = 0; c < COLS; c++) {
+    if (board[y][c]) cleared++;
+    board[y][c] = 0;
+  }
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r][x]) cleared++;
+    board[r][x] = 0;
+  }
+  score += cleared * LIGHTNING_CELL_SCORE * level;
+  updateHUD();
+}
+
 function ghostY() {
   let gy = current.y;
   while (!collide(current.shape, current.x, gy + 1)) gy++;
@@ -136,7 +157,8 @@ function softDrop() {
 }
 
 function lockPiece() {
-  merge();
+  if (current.type === LIGHTNING) strikeLightning();
+  else merge();
   clearLines();
   spawn();
 }
@@ -165,6 +187,13 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
   // highlight
   context.fillStyle = 'rgba(255,255,255,0.12)';
   context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  if (colorIndex === LIGHTNING) {
+    context.fillStyle = '#7a5c00';
+    context.font = `${Math.floor(size * 0.7)}px sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('⚡', x * size + size / 2, y * size + size / 2 + 1);
+  }
   context.globalAlpha = 1;
 }
 
