@@ -123,12 +123,14 @@ function strikeLightning() {
   let cleared = 0;
   for (let c = 0; c < COLS; c++) {
     if (board[y][c]) cleared++;
-    board[y][c] = 0;
   }
   for (let r = 0; r < ROWS; r++) {
-    if (board[r][x]) cleared++;
+    if (board[r][x] && r !== y) cleared++;
     board[r][x] = 0;
   }
+  // remove the row and let everything above fall one row down
+  board.splice(y, 1);
+  board.unshift(new Array(COLS).fill(0));
   score += cleared * LIGHTNING_CELL_SCORE * level;
   updateHUD();
 }
