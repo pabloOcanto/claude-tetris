@@ -41,6 +41,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Vista previa** de la siguiente pieza.
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
+- **Rayo ⚡**: pieza especial de 1 celda (8 % de probabilidad) que al aterrizar limpia su fila y su columna completas (10 puntos por bloque × nivel).
 - **Pausa** y **Game Over** con opción de reinicio.
 
 ---
